@@ -1,6 +1,0 @@
-User-agent: *
-Allow: /
-Disallow: /search?
-Disallow: /?sort=
-
-Sitemap: https://fapleaks.com/sitemap.xml
