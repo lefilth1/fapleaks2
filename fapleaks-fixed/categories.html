@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+  <base href="/fapleaks/">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>All Categories | Fapleaks</title>
+  <meta name="description" content="Browse all video categories on Fapleaks. Find exactly what you're looking for.">
+  <meta name="robots" content="index, follow">
+  <meta name="rating" content="adult">
+  <meta name="theme-color" content="#6366f1">
+  <link rel="canonical" href="https://fapleaks.com/categories">
+  <meta property="og:title" content="All Categories | Fapleaks">
+  <meta property="og:url" content="https://fapleaks.com/categories">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800;900&display=swap">
+  <link rel="stylesheet" href="assets/css/custom.css">
+  <style>
+    .cats-list {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+      gap: 1.25rem;
+      padding: 2rem 1.5rem 4rem;
+      max-width: 1400px;
+      margin: 0 auto;
+    }
+    @media(max-width:480px){ .cats-list{ grid-template-columns:1fr 1fr; gap:.75rem; padding:1rem 1rem 3rem; } }
+    .cat-item {
+      display: flex; align-items: center; gap: 1rem;
+      padding: 1.1rem 1.4rem;
+      background: rgba(255,255,255,.025);
+      border: 1px solid rgba(255,255,255,.06);
+      border-radius: 1.25rem;
+      text-decoration: none;
+      transition: all .3s cubic-bezier(.4,0,.2,1);
+    }
+    .cat-item:hover {
+      transform: translateY(-3px);
+      background: rgba(255,255,255,.05);
+      border-color: rgba(255,255,255,.12);
+      box-shadow: 0 12px 40px rgba(0,0,0,.3);
+    }
+    .cat-color-dot {
+      width: 14px; height: 14px; border-radius: 50%; flex-shrink: 0;
+    }
+    .cat-item-name {
+      flex: 1; font-size: .88rem; font-weight: 700; color: #cbd5e1;
+      transition: color .2s; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    }
+    .cat-item:hover .cat-item-name { color: #fff; }
+    .cat-item-count {
+      font-size: .7rem; font-weight: 700; color: #334155;
+      background: rgba(255,255,255,.04);
+      padding: .25rem .6rem; border-radius: .5rem;
+      white-space: nowrap;
+    }
+  </style>
+</head>
+<body>
+
+<header id="navbar"></header>
+
+<main id="main-content">
+
+  <div class="page-header">
+    <h1 class="page-title">All <span>Categories</span></h1>
+    <p class="page-desc" id="cat-count-desc">Loading…</p>
+  </div>
+
+  <div class="cats-list" id="cats-list">
+    <div class="loading-wrap" style="grid-column:1/-1"><div class="spinner"></div></div>
+  </div>
+
+</main>
+
+<footer id="footer"></footer>
+
+<script src="assets/js/utils.js"></script>
+<script src="assets/js/layout.js"></script>
+<script>
+async function init() {
+  const videos = await Utils.getVideos();
+
+  // Build category map
+  const catMap = {};
+  videos.forEach(v => {
+    if (!v.category || !v.category_slug) return;
+    if (!catMap[v.category_slug]) {
+      catMap[v.category_slug] = {
+        slug: v.category_slug,
+        name: v.category,
+        color: v.category_color,
+        count: 0
+      };
+    }
+    catMap[v.category_slug].count++;
+  });
+
+  const cats = Object.values(catMap).sort((a, b) => b.count - a.count);
+
+  document.getElementById('cat-count-desc').textContent =
+    `${cats.length} collections to explore`;
+
+  document.getElementById('cats-list').innerHTML = cats.map(c => `
+    <a href="/category/${c.slug}" class="cat-item">
+      <span class="cat-color-dot" style="background:${c.color}"></span>
+      <span class="cat-item-name">${Utils.esc(c.name)}</span>
+      <span class="cat-item-count">${c.count}</span>
+    </a>`).join('');
+}
+
+init().catch(() => {
+  document.getElementById('cats-list').innerHTML =
+    '<p style="color:#64748b;grid-column:1/-1;text-align:center;padding:4rem">Failed to load categories.</p>';
+});
+</script>
+</body>
+</html>

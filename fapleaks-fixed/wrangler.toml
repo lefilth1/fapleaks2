@@ -1,0 +1,15 @@
+name = "fapleaks-worker"
+main = "worker.js"
+compatibility_date = "2024-01-01"
+
+[vars]
+ORIGIN = "https://youruser.github.io/fapleaks"
+
+# Optional: KV for view counters / analytics
+# [[kv_namespaces]]
+# binding = "FAPLEAKS_KV"
+# id = "REPLACE_WITH_YOUR_KV_ID"
+
+[[routes]]
+pattern = "fapleaks.com/*"
+zone_name = "fapleaks.com"

@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+  <base href="/fapleaks/">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Model Profile | Fapleaks</title>
+  <meta name="description" content="">
+  <meta name="robots" content="index, follow, max-image-preview:large">
+  <meta name="rating" content="adult">
+  <meta name="theme-color" content="#6366f1">
+  <link rel="canonical" href="">
+  <meta property="og:type" content="profile">
+  <meta property="og:title" content="">
+  <meta property="og:description" content="">
+  <meta property="og:image" content="">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://cdnjs.cloudflare.com">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap">
+  <link rel="stylesheet" href="assets/css/custom.css">
+  <style>
+    .profile-hero {
+      background: linear-gradient(180deg, rgba(99,102,241,.12) 0%, transparent 100%);
+      border-bottom: 1px solid rgba(255,255,255,.05);
+      padding: 3rem 1.5rem 2.5rem;
+    }
+    .profile-inner { max-width:900px; margin:0 auto; display:flex; align-items:center; gap:2.5rem; }
+    @media(max-width:600px){ .profile-inner{flex-direction:column;text-align:center;} }
+    .profile-avatar {
+      width:120px; height:120px; border-radius:50%; overflow:hidden; flex-shrink:0;
+      border:3px solid rgba(99,102,241,.5);
+      box-shadow:0 0 40px rgba(99,102,241,.25);
+      background:#1e1e2e;
+    }
+    .profile-avatar img { width:100%;height:100%;object-fit:cover; }
+    .profile-avatar-initial {
+      width:100%;height:100%;display:flex;align-items:center;justify-content:center;
+      font-size:3rem;font-weight:900;color:#fff;
+      background:var(--gradient-premium);
+    }
+    .profile-name { font-size:2.2rem;font-weight:900;color:#fff;letter-spacing:-.04em; }
+    .profile-name span { background:var(--gradient-premium);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text; }
+    .profile-stat { display:flex;align-items:center;gap:.5rem;font-size:.8rem;font-weight:700;color:#64748b; }
+    .profile-stat i { color:var(--brand-primary); }
+    .profile-stats { display:flex;gap:1.5rem;flex-wrap:wrap;margin-top:1rem; }
+    @media(max-width:600px){ .profile-stats{justify-content:center;} }
+  </style>
+</head>
+<body>
+
+<header id="navbar"></header>
+<main id="main-content">
+
+  <!-- Hero -->
+  <section class="profile-hero" id="profile-hero" style="display:none">
+    <div class="profile-inner">
+      <div class="profile-avatar" id="profile-avatar"></div>
+      <div>
+        <h1 class="profile-name" id="profile-name"></h1>
+        <div class="profile-stats">
+          <span class="profile-stat" id="stat-videos"><i class="fas fa-film"></i> — videos</span>
+          <span class="profile-stat" id="stat-views"><i class="fas fa-eye"></i> — views</span>
+          <span class="profile-stat"><i class="fas fa-check-circle"></i> Verified Creator</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Sort bar -->
+  <div class="filter-bar" id="model-filter" style="display:none;margin-top:1.5rem">
+    <div class="filter-container">
+      <button class="filter-btn active" data-sort="recent"  onclick="setSort('recent')"><i class="fas fa-clock"></i> Recent</button>
+      <button class="filter-btn"        data-sort="popular" onclick="setSort('popular')"><i class="fas fa-fire-alt"></i> Popular</button>
+    </div>
+  </div>
+
+  <!-- Grid -->
+  <section class="videos-grid" id="videos-grid" aria-label="Model videos">
+    <div class="loading-wrap" style="grid-column:1/-1"><div class="spinner"></div></div>
+  </section>
+
+  <div class="load-more-wrap" id="load-more-wrap" style="display:none">
+    <button id="load-more-btn" onclick="loadMore()"><i class="fas fa-plus-circle"></i>&nbsp; Load More</button>
+  </div>
+
+</main>
+<footer id="footer"></footer>
+
+<script src="assets/js/utils.js"></script>
+<script src="assets/js/layout.js"></script>
+<script>
+const PER_PAGE = 24;
+const BATCH    = 12;
+let modelVideos = [];
+let sorted      = [];
+let loaded      = 0;
+let currentSort = 'recent';
+
+const GRAD = ['#6366f1','#7c3aed','#db2777','#e11d48','#0891b2'];
+function initColor(n){ return GRAD[n.charCodeAt(0) % GRAD.length]; }
+
+async function init() {
+  const slug = Utils.slugFromPath('model');
+  if (!slug) { Utils.show404('Model not found'); return; }
+
+  const [videos, models] = await Promise.all([Utils.getVideos(), Utils.getModels()]);
+
+  // find model record (by slug)
+  const model = models.find(m => m.slug === slug);
+  const displayName = model ? model.name : slug.replace(/_/g,' ').replace(/\b\w/g, c => c.toUpperCase());
+
+  // filter videos featuring this model
+  modelVideos = videos.filter(v =>
+    v.model && v.model.toLowerCase().split(',').map(s=>s.trim().toLowerCase().replace(/\s+/g,'_').replace(/[^a-z0-9_]/g,'')).includes(slug)
+  );
+
+  if (!modelVideos.length) { Utils.show404(`No videos found for "${displayName}"`); return; }
+
+  const totalViews = modelVideos.reduce((acc, v) => acc + v.views, 0);
+
+  // ── SEO ──
+  const desc = `Watch all ${modelVideos.length} leaked videos of ${displayName}. Free HD content on Fapleaks.`;
+  Utils.setMeta(`${displayName} – Leaked Videos`, desc, model?.photo || '');
+  document.querySelector('meta[property="og:image"]')?.setAttribute('content', model?.photo || '');
+
+  // ── Profile hero ──
+  document.getElementById('profile-hero').style.display = '';
+  document.getElementById('model-filter').style.display = '';
+
+  const avatarEl = document.getElementById('profile-avatar');
+  if (model?.photo) {
+    avatarEl.innerHTML = `<img src="${Utils.esc(model.photo)}" alt="${Utils.esc(displayName)}"
+      onerror="this.parentNode.innerHTML='<div class=\\'profile-avatar-initial\\'>${Utils.esc(displayName.charAt(0).toUpperCase())}</div>'">`;
+  } else {
+    avatarEl.innerHTML = `<div class="profile-avatar-initial" style="background:linear-gradient(135deg,${initColor(displayName)} 0%,#0f172a 100%)">
+      ${Utils.esc(displayName.charAt(0).toUpperCase())}</div>`;
+  }
+
+  const nameEl = document.getElementById('profile-name');
+  nameEl.innerHTML = `<span>${Utils.esc(displayName)}</span>`;
+
+  document.getElementById('stat-videos').innerHTML = `<i class="fas fa-film"></i> ${modelVideos.length} videos`;
+  document.getElementById('stat-views').innerHTML  = `<i class="fas fa-eye"></i> ${Utils.formatViews(totalViews)} views`;
+
+  // ── Schema ──
+  injectSchema(displayName, modelVideos.length, model?.photo);
+
+  sorted = Utils.sortVideos(modelVideos, currentSort);
+  renderPage();
+}
+
+function renderPage() {
+  const grid  = document.getElementById('videos-grid');
+  const slice = sorted.slice(0, PER_PAGE);
+  loaded = slice.length;
+  grid.innerHTML = slice.map((v, i) => Utils.videoCardHTML(v, i < 4)).join('');
+  document.getElementById('load-more-wrap').style.display = loaded < sorted.length ? 'flex' : 'none';
+}
+
+function loadMore() {
+  const btn = document.getElementById('load-more-btn');
+  btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Loading…';
+  btn.disabled  = true;
+  setTimeout(() => {
+    const slice = sorted.slice(loaded, loaded + BATCH);
+    document.getElementById('videos-grid').insertAdjacentHTML('beforeend', slice.map(v => Utils.videoCardHTML(v)).join(''));
+    loaded += slice.length;
+    btn.innerHTML = '<i class="fas fa-plus-circle"></i>&nbsp; Load More';
+    btn.disabled  = false;
+    if (loaded >= sorted.length) document.getElementById('load-more-wrap').style.display = 'none';
+  }, 300);
+}
+
+function setSort(sort) {
+  currentSort = sort;
+  sorted = Utils.sortVideos(modelVideos, sort);
+  loaded = 0;
+  renderPage();
+  document.querySelectorAll('.filter-btn').forEach(b => b.classList.toggle('active', b.dataset.sort === sort));
+}
+
+function injectSchema(name, count, photo) {
+  const schema = {
+    '@context':'https://schema.org','@type':'Person',
+    name, url: window.location.href,
+    ...(photo ? { image: photo } : {}),
+    description: `${name} has ${count} videos on Fapleaks.`,
+    sameAs: []
+  };
+  const el = document.createElement('script');
+  el.type = 'application/ld+json';
+  el.textContent = JSON.stringify(schema);
+  document.head.appendChild(el);
+}
+
+init().catch(() => Utils.show404('Model not found'));
+</script>
+</body>
+</html>

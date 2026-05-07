@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+  <base href="/fapleaks/">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Fapleaks – Free Leaked Videos & Premium HD Content</title>
+  <meta name="description" content="Fapleaks – the best collection of leaked videos in HD. Watch exclusive content from top creators for free. Updated daily.">
+  <meta name="robots" content="index, follow, max-image-preview:large">
+  <meta name="rating" content="adult">
+  <meta name="theme-color" content="#6366f1">
+  <link rel="canonical" href="https://fapleaks.com/">
+  <!-- Open Graph -->
+  <meta property="og:type" content="website">
+  <meta property="og:title" content="Fapleaks – Free Leaked Videos & Premium HD Content">
+  <meta property="og:description" content="Fapleaks – the best collection of leaked videos in HD. Watch exclusive content from top creators for free.">
+  <meta property="og:url" content="https://fapleaks.com/">
+  <meta property="og:image" content="https://fapleaks.com/assets/img/og-default.jpg">
+  <!-- Preloads -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://cdnjs.cloudflare.com">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap">
+  <link rel="stylesheet" href="assets/css/custom.css">
+</head>
+<body>
+
+<header id="navbar"></header>
+
+<main id="main-content">
+
+  <!-- Filter bar -->
+  <div class="filter-bar" id="filter-bar">
+    <div class="filter-container">
+      <button class="filter-btn active" data-sort="random" onclick="setSort('random')">
+        <i class="fas fa-dice"></i> Random
+      </button>
+      <button class="filter-btn" data-sort="popular" onclick="setSort('popular')">
+        <i class="fas fa-fire-alt"></i> Popular
+      </button>
+      <button class="filter-btn" data-sort="recent" onclick="setSort('recent')">
+        <i class="fas fa-clock"></i> Recent
+      </button>
+    </div>
+  </div>
+
+  <!-- Video grid -->
+  <section class="videos-grid" id="videos-grid" aria-label="Video listing">
+    <div class="loading-wrap" style="grid-column:1/-1">
+      <div class="spinner"></div>
+    </div>
+  </section>
+
+  <!-- Load more -->
+  <div class="load-more-wrap" id="load-more-wrap" style="display:none">
+    <button id="load-more-btn" onclick="loadMore()">
+      <i class="fas fa-plus-circle"></i>&nbsp; Load More
+    </button>
+  </div>
+
+</main>
+
+<footer id="footer"></footer>
+
+<script src="assets/js/utils.js"></script>
+<script src="assets/js/layout.js"></script>
+<script>
+  const PER_PAGE = 24;
+  const BATCH    = 12;
+  let allVideos  = [];
+  let sorted     = [];
+  let loaded     = 0;
+  let currentSort = 'random';
+
+  // Read sort from URL param on load
+  const urlSort = Utils.getQueryParam('sort');
+  if (['random','popular','recent'].includes(urlSort)) currentSort = urlSort;
+
+  async function init() {
+    allVideos = await Utils.getVideos();
+    sorted    = Utils.sortVideos(allVideos, currentSort);
+    loaded    = 0;
+    renderPage();
+    setFilterUI(currentSort);
+  }
+
+  function renderPage() {
+    const grid  = document.getElementById('videos-grid');
+    const slice = sorted.slice(0, PER_PAGE);
+    loaded      = slice.length;
+    grid.innerHTML = slice.map((v, i) => Utils.videoCardHTML(v, i < 4)).join('');
+    const wrap = document.getElementById('load-more-wrap');
+    wrap.style.display = loaded < sorted.length ? 'flex' : 'none';
+  }
+
+  function loadMore() {
+    const btn  = document.getElementById('load-more-btn');
+    btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Loading…';
+    btn.disabled  = true;
+    setTimeout(() => {
+      const slice = sorted.slice(loaded, loaded + BATCH);
+      if (!slice.length) { document.getElementById('load-more-wrap').style.display = 'none'; return; }
+      const grid = document.getElementById('videos-grid');
+      grid.insertAdjacentHTML('beforeend', slice.map(v => Utils.videoCardHTML(v)).join(''));
+      loaded += slice.length;
+      btn.innerHTML = '<i class="fas fa-plus-circle"></i>&nbsp; Load More';
+      btn.disabled  = false;
+      if (loaded >= sorted.length) document.getElementById('load-more-wrap').style.display = 'none';
+    }, 300);
+  }
+
+  function setSort(sort) {
+    currentSort = sort;
+    history.replaceState(null, '', sort === 'random' ? '/' : `/?sort=${sort}`);
+    sorted  = Utils.sortVideos(allVideos, sort);
+    loaded  = 0;
+    renderPage();
+    setFilterUI(sort);
+  }
+
+  function setFilterUI(sort) {
+    document.querySelectorAll('.filter-btn').forEach(btn => {
+      btn.classList.toggle('active', btn.dataset.sort === sort);
+    });
+  }
+
+  init().catch(() => {
+    document.getElementById('videos-grid').innerHTML =
+      '<p style="color:#64748b;grid-column:1/-1;text-align:center;padding:4rem">Failed to load videos.</p>';
+  });
+</script>
+</body>
+</html>
