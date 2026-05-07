@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+  <base href="/fapleaks2/fapleaks-fixed/">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>404 – Page Not Found | Fapleaks</title>
+  <meta name="robots" content="noindex">
+  <meta name="rating" content="adult">
+  <meta name="theme-color" content="#6366f1">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800;900&display=swap">
+  <link rel="stylesheet" href="assets/css/custom.css">
+  <style>
+    .not-found-wrap {
+      display: flex; flex-direction: column; align-items: center;
+      justify-content: center; min-height: calc(100vh - 128px);
+      text-align: center; padding: 2rem;
+    }
+    .nf-code {
+      font-size: clamp(5rem, 18vw, 12rem);
+      font-weight: 900; letter-spacing: -.06em; line-height: 1;
+      background: var(--gradient-premium);
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+      background-clip: text; margin-bottom: 1.5rem;
+    }
+    .nf-title { font-size: 1.6rem; font-weight: 800; color: #fff; margin-bottom: .75rem; }
+    .nf-sub { color: #64748b; font-size: .95rem; max-width: 420px; line-height: 1.6; margin-bottom: 2.5rem; }
+    .nf-btns { display: flex; gap: 1rem; flex-wrap: wrap; justify-content: center; }
+    .nf-btn-primary {
+      display: inline-flex; align-items: center; gap: .6rem;
+      background: var(--brand-primary); color: #fff;
+      padding: .9rem 2rem; border-radius: 1rem; font-weight: 700;
+      font-size: .9rem; transition: background .2s, transform .2s;
+    }
+    .nf-btn-primary:hover { background: var(--brand-secondary); transform: translateY(-2px); }
+    .nf-btn-ghost {
+      display: inline-flex; align-items: center; gap: .6rem;
+      background: rgba(255,255,255,.05); color: #94a3b8;
+      border: 1px solid rgba(255,255,255,.1);
+      padding: .9rem 2rem; border-radius: 1rem; font-weight: 700;
+      font-size: .9rem; transition: all .2s;
+    }
+    .nf-btn-ghost:hover { background: rgba(255,255,255,.09); color: #fff; }
+    .suggestions { margin-top: 3.5rem; }
+    .suggestions-title {
+      font-size: .65rem; text-transform: uppercase; letter-spacing: .3em;
+      font-weight: 900; color: #334155; margin-bottom: 1rem;
+    }
+    .suggestions-grid {
+      display: flex; gap: .75rem; flex-wrap: wrap; justify-content: center;
+    }
+    .sug-pill {
+      padding: .5rem 1.2rem; border-radius: 999px;
+      background: rgba(255,255,255,.04); border: 1px solid rgba(255,255,255,.07);
+      font-size: .8rem; font-weight: 700; color: #64748b; transition: all .2s;
+    }
+    .sug-pill:hover { background: rgba(99,102,241,.15); border-color: rgba(99,102,241,.4); color: var(--brand-primary); }
+  </style>
+</head>
+<body>
+
+<header id="navbar"></header>
+
+<main>
+  <div class="not-found-wrap">
+    <div class="nf-code">404</div>
+    <h1 class="nf-title">Oops! Page Not Found</h1>
+    <p class="nf-sub">
+      The page you're looking for doesn't exist, has been moved,
+      or the URL might be wrong. Let's get you back on track.
+    </p>
+    <div class="nf-btns">
+      <a href="/"        class="nf-btn-primary"><i class="fas fa-home"></i> Back to Home</a>
+      <a href="/models"  class="nf-btn-ghost"><i class="fas fa-star"></i> Browse Stars</a>
+    </div>
+    <div class="suggestions">
+      <p class="suggestions-title">Popular Collections</p>
+      <div class="suggestions-grid" id="cat-pills">
+        <div class="spinner"></div>
+      </div>
+    </div>
+  </div>
+</main>
+
+<footer id="footer"></footer>
+
+<script src="assets/js/utils.js"></script>
+<script src="assets/js/layout.js"></script>
+<script>
+(async () => {
+  try {
+    const videos = await Utils.getVideos();
+    const catMap  = {};
+    videos.forEach(v => {
+      if (!v.category_slug) return;
+      if (!catMap[v.category_slug]) catMap[v.category_slug] = { name: v.category, slug: v.category_slug, color: v.category_color, c: 0 };
+      catMap[v.category_slug].c++;
+    });
+    const top = Object.values(catMap).sort((a,b) => b.c - a.c).slice(0, 8);
+    document.getElementById('cat-pills').innerHTML = top.map(c =>
+      `<a href="/category/${c.slug}" class="sug-pill" style="border-color:${c.color}22">${Utils.esc(c.name)}</a>`
+    ).join('');
+  } catch {}
+})();
+</script>
+</body>
+</html>
