@@ -11,7 +11,7 @@
  *   fapleaks.com/*
  */
 
-const ORIGIN = 'https://lefilth1.github.io/fapleaks2'; // ← change this
+const ORIGIN = 'https://lefilth1.github.io/fapleaks2/fapleaks-fixed/'; // ← change this
 
 // Static assets – pass straight through to GitHub Pages
 const ASSET_EXTS = /\.(css|js|json|jpg|jpeg|png|gif|webp|svg|ico|woff2?|ttf|otf|map)$/i;
