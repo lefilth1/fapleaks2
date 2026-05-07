@@ -2,7 +2,7 @@ name = "fapleaks3"
 compatibility_date = "2026-05-07"
 
 [assets]
-directory = "./fapleaks2/fapleaks-fixed"
+directory = "https://lefilth1.github.io/fapleaks2/fapleaks-fixed/"
 binding = "ASSETS"
 
 [[routes]]
