@@ -3,7 +3,7 @@ main = "worker.js"
 compatibility_date = "2024-01-01"
 
 [vars]
-ORIGIN = "https://youruser.github.io/fapleaks"
+ORIGIN = "https://lefilth1.github.io/fapleaks2"
 
 # Optional: KV for view counters / analytics
 # [[kv_namespaces]]
@@ -11,5 +11,5 @@ ORIGIN = "https://youruser.github.io/fapleaks"
 # id = "REPLACE_WITH_YOUR_KV_ID"
 
 [[routes]]
-pattern = "fapleaks.com/*"
-zone_name = "fapleaks.com"
+pattern = "futurewaveventures.click/*"
+zone_name = "futurewaveventures.click"
