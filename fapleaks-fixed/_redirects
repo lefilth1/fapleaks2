@@ -1,4 +1,3 @@
-# Cloudflare Pages / Netlify style redirects (fallback if not using Worker)
 /video/*     /video.html    200
 /model/*     /model.html    200
 /category/*  /category.html 200
@@ -6,4 +5,4 @@
 /categories  /categories.html 200
 /search      /search.html   200
 /stars       /models.html   200
-/*           /404.html      404
+/*           /404.html      200
